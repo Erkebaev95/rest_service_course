@@ -6,6 +6,7 @@ import org.erkebaev.services.PeopleService;
 import org.erkebaev.util.PersonErrorResponse;
 import org.erkebaev.util.PersonNotCreatedException;
 import org.erkebaev.util.PersonNotFoundException;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -63,17 +64,11 @@ public class PeopleController {
 
     // приходят от клиента
     private Person convertToPerson(PersonDTO personDTO) {
-        Person person = new Person();
-
-        // этот способ устаревший
-        person.setName(personDTO.getName());
-        person.setAge(personDTO.getAge());
-        person.setEmail(personDTO.getEmail());
-
-        return person;
+        // Создаем новый объект маппер
+        ModelMapper modelMapper = new ModelMapper();
+        // Маппет все поля из дто в объект модели
+        return modelMapper.map(personDTO, Person.class);
     }
-
-
 
     // ловим исключение
     @ExceptionHandler
