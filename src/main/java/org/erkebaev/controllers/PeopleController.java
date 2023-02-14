@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/people")
@@ -30,15 +31,16 @@ public class PeopleController {
     }
 
     @GetMapping()
-    public List<Person> getPeople() {
+    public List<PersonDTO> getPeople() {
         // Jackson конвертирует эти объекты в JSON
-        return peopleService.findAll();
+        return peopleService.findAll().stream().map(this::convertToPersonDTO)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
-    public Person getPerson(@PathVariable("id") int id) {
+    public PersonDTO getPerson(@PathVariable("id") int id) {
         // Jackson конвертирует в JSON
-        return peopleService.findOne(id);
+        return convertToPersonDTO(peopleService.findOne(id));
     }
 
     @PostMapping
@@ -66,6 +68,10 @@ public class PeopleController {
     private Person convertToPerson(PersonDTO personDTO) {
         // Маппет все поля из дто в объект модели
         return modelMapper.map(personDTO, Person.class);
+    }
+
+    private PersonDTO convertToPersonDTO(Person person) {
+        return modelMapper.map(person, PersonDTO.class);
     }
 
     // ловим исключение
