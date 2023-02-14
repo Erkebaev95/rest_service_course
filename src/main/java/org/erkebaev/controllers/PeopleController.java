@@ -1,5 +1,6 @@
 package org.erkebaev.controllers;
 
+import org.erkebaev.dto.PersonDTO;
 import org.erkebaev.models.Person;
 import org.erkebaev.services.PeopleService;
 import org.erkebaev.util.PersonErrorResponse;
@@ -13,6 +14,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -39,10 +41,10 @@ public class PeopleController {
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> create(@RequestBody @Valid Person person,
+    public ResponseEntity<HttpStatus> create(@RequestBody @Valid PersonDTO personDTO,
                                              BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            // TODO
+            //
             StringBuilder errorMsg = new StringBuilder();
             List<FieldError> errors = bindingResult.getFieldErrors();
             for (FieldError error : errors) {
@@ -53,11 +55,25 @@ public class PeopleController {
             }
             throw new PersonNotCreatedException(errorMsg.toString());
         }
-        peopleService.save(person);
+        peopleService.save(convertToPerson(personDTO));
 
         // отправляем http ответ с пустым телом и со статусом 200
         return ResponseEntity.ok(HttpStatus.OK);
     }
+
+    // приходят от клиента
+    private Person convertToPerson(PersonDTO personDTO) {
+        Person person = new Person();
+
+        // этот способ устаревший
+        person.setName(personDTO.getName());
+        person.setAge(personDTO.getAge());
+        person.setEmail(personDTO.getEmail());
+
+        return person;
+    }
+
+
 
     // ловим исключение
     @ExceptionHandler
