@@ -3,12 +3,16 @@ package org.erkebaev.controllers;
 import org.erkebaev.models.Person;
 import org.erkebaev.services.PeopleService;
 import org.erkebaev.util.PersonErrorResponse;
+import org.erkebaev.util.PersonNotCreatedException;
 import org.erkebaev.util.PersonNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -34,14 +38,37 @@ public class PeopleController {
         return peopleService.findOne(id);
     }
 
+    @PostMapping
+    public ResponseEntity<HttpStatus> create(@RequestBody @Valid Person person,
+                                             BindingResult bindingResult) {
+        if (bindingResult.hasErrors()) {
+            // TODO
+            StringBuilder errorMsg = new StringBuilder();
+            List<FieldError> errors = bindingResult.getFieldErrors();
+            for (FieldError error : errors) {
+                errorMsg.append(error.getField())
+                        .append(" - ")
+                        .append(error.getDefaultMessage())
+                        .append(";");
+            }
+            throw new PersonNotCreatedException(errorMsg.toString());
+        }
+        peopleService.save(person);
+
+        // отправляем http ответ с пустым телом и со статусом 200
+        return ResponseEntity.ok(HttpStatus.OK);
+    }
+
     // ловим исключение
     @ExceptionHandler
-    private ResponseEntity<PersonErrorResponse> handleException(PersonNotFoundException e) {
+    private ResponseEntity<PersonErrorResponse> handleException(PersonNotCreatedException e) {
         PersonErrorResponse response = new PersonErrorResponse(
-                "Person with id is not found", System.currentTimeMillis()
+                e.getMessage(), System.currentTimeMillis()
         );
 
         // В HTTP ответе тело ответа (response) и статус в заголовке
-        return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);// Not_FOUND - 404
+        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        // NOT_FOUND - 404
+        // BAD_REQUEST - 400
     }
 }

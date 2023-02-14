@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 public class FirstRestController {
 
-    //@ResponseBody  - аннотация возвращает данные
+    //@ResponseBody  - отдает JAVA объекты в виде JSON
+    //@RequestBody   - принимает JSON и конвертирует в JAVA объекты
     @GetMapping("/sayHello")
     public String sayHello() {
 
