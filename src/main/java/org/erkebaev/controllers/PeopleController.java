@@ -5,7 +5,6 @@ import org.erkebaev.models.Person;
 import org.erkebaev.services.PeopleService;
 import org.erkebaev.util.PersonErrorResponse;
 import org.erkebaev.util.PersonNotCreatedException;
-import org.erkebaev.util.PersonNotFoundException;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,17 +14,18 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/people")
 public class PeopleController {
 
+    private final ModelMapper modelMapper;
     private final PeopleService peopleService;
 
     @Autowired
-    public PeopleController(PeopleService peopleService) {
+    public PeopleController(ModelMapper modelMapper, PeopleService peopleService) {
+        this.modelMapper = modelMapper;
         this.peopleService = peopleService;
     }
 
@@ -64,8 +64,6 @@ public class PeopleController {
 
     // приходят от клиента
     private Person convertToPerson(PersonDTO personDTO) {
-        // Создаем новый объект маппер
-        ModelMapper modelMapper = new ModelMapper();
         // Маппет все поля из дто в объект модели
         return modelMapper.map(personDTO, Person.class);
     }
